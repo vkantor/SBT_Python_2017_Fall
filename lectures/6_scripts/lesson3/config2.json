@@ -1,0 +1,9 @@
+{
+	"filename":"../lesson2/sells2.csv",
+	"date_field":"date",
+	"good_count_field": "goods_count",
+	"total_money_field": "total_money",
+	"start_date": "05.01.2017",
+	"finish_date": "10.01.2017",
+	"date_format": "%d.%m.%Y"
+}

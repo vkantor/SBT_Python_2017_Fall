@@ -1,0 +1,281 @@
+Сегодня мы научимся писать скрипты для автоматизация разных действий так, чтобы их можно было запускать из консоли, без редактирования код
+
+Часть 1. Стандартные команды linux (рассказать и показать сразу (если хочешь)):
+
+  ls — выдать список файлов в текущем каталоге.
+  cd [каталог] — сменить текущий каталог. Если имя каталога не указывается, то текущим становится домашний каталог пользователя.
+  cp <что_копировать> <куда_копировать> — копировать файлы.
+  mv <что_перемещать> <куда_перемещать> — переместить или переименовать файл.
+  rm <файлы> — удалить файлы.
+  mkdir <каталог> — создать новый каталог.
+  rmdir <каталог> — удалить пустой каталог.
+  rm -r <файлы и/или каталоги> (рекурсивное удаление) — удалить файлы или каталоги и их подкаталоги. ОСТОРОЖНЕЙ с этой командой, поскольку пока у Linux нет системы полного восстановления удаленных файлов (если вы не пользуетесь специальными программами для помещения удаленных файлов в специальный каталог, что-то вроде «корзинки» в ОС Windows).
+  cat <имя_файла> — вывод содержимого файла на стандартный вывод (по умолчанию — на экран).
+  Можно записать вводимый на экран текст с помощью следующей последовательности действий:
+  cat > <имя_файла> 
+  sh <имя файла> исполняет файл
+
+После всего надо показать example1.sh и выполнить sh example.sh находясь в папке leeson3
+
+>>> sh example1.sh
+
+example1.sh  lesson_text.txt  my_algo.py  my_command.py
+example1.sh  lesson_text.txt  my_algo.py  my_command.py  tmpfile
+lesson1  lesson2  lesson3
+example1.sh     lesson_text.txt  my_command.py
+good_json.json  my_algo.py       tmpfile
+example1.sh  lesson_text.txt  my_algo.py  my_command.py  tmpfile
+lesson1  lesson2  lesson3  tmpfile
+lesson1  lesson2  lesson3
+lesson1  lesson2  lesson3  tmpdir
+tmpfile
+lesson1  lesson2  lesson3  tmpdir
+lesson1  lesson2  lesson3
+
+
+
+Часть 2. Как вызывать стандартные команды из Python (начало)
+
+https://docs.python.org/3.6/library/subprocess.html
+
+В Python есть способ вызывать все эти команды из кода. 
+
+Ка правильно разбить команду на составляющие:
+# example2_step1.py
+
+
+>>> python example2_step1.py
+  ls
+  echo "Hello wordl!" > tmpfile
+  ls
+  cp ../lesson2/good_json.json ./
+  ls
+  rm lesson3/good_json.json
+  ls
+  mv ./tmpfile ../
+  ls ../
+  rm ../tmpfile
+  ls ../
+  mkdir ../tmpdir
+  ls ../
+  rm -r ../tmpdir
+  ls
+  ['ls']
+  ['ls']
+
+  ['echo', '"Hello', 'wordl!"', '>', 'tmpfile'] - вот здесь разница видна
+  ['echo', 'Hello wordl!', '>', 'tmpfile']
+
+  ['ls']
+  ['ls']
+
+  ['cp', '../lesson2/good_json.json', './']
+  ['cp', '../lesson2/good_json.json', './']
+
+  ['ls']
+  ['ls']
+
+  ['rm', 'lesson3/good_json.json']
+  ['rm', 'lesson3/good_json.json']
+
+  ['ls']
+  ['ls']
+
+  ['mv', './tmpfile', '../']
+  ['mv', './tmpfile', '../']
+
+  ['ls', '../']
+  ['ls', '../']
+
+  ['rm', '../tmpfile']
+  ['rm', '../tmpfile']
+
+  ['ls', '../']
+  ['ls', '../']
+
+  ['mkdir', '../tmpdir']
+  ['mkdir', '../tmpdir']
+
+  ['ls', '../']
+  ['ls', '../']
+
+  ['rm', '-r', '../tmpdir']
+  ['rm', '-r', '../tmpdir']
+
+  ['ls']
+  ['ls']
+
+
+Теперь непосредственно выполним команды:
+
+>>> python example2_step2.py
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+  ['cp', '../lesson2/good_json.json', './']
+  b''
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\ngood_json.json\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+  ['cp', 'good_json.json', 'tmpfile']
+  b''
+  ['rm', 'good_json.json']
+  b''
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\ntmpfile\n'
+  ['mv', './tmpfile', '../']
+  b''
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\ntmpfile\n'
+  ['rm', '../tmpfile']
+  b''
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\n'
+  ['mkdir', '../tmpdir']
+  b''
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\ntmpdir\n'
+  ['rm', '-r', '../tmpdir']
+  b''
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+
+
+
+Мы видим, что возвращается какая-то строчка. Давайте попробуем её распарсить.
+
+
+>>> python example2_step3.py
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+
+  example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n
+
+  ['example1.sh', 'example2.sh', 'example2_simple.sh', 'example2_step1.py', 'example2_step2.py', 'example2_step3.py', 'lesson_text.txt', 'my_algo.py', 'my_command.py', '']
+
+
+  ['cp', '../lesson2/good_json.json', './']
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\ngood_json.json\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+
+  example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\ngood_json.json\nlesson_text.txt\nmy_algo.py\nmy_command.py\n
+
+  ['example1.sh', 'example2.sh', 'example2_simple.sh', 'example2_step1.py', 'example2_step2.py', 'example2_step3.py', 'good_json.json', 'lesson_text.txt', 'my_algo.py', 'my_command.py', '']
+
+
+  ['cp', 'good_json.json', 'tmpfile']
+  ['rm', 'good_json.json']
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\ntmpfile\n'
+
+  example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\ntmpfile\n
+
+  ['example1.sh', 'example2.sh', 'example2_simple.sh', 'example2_step1.py', 'example2_step2.py', 'example2_step3.py', 'lesson_text.txt', 'my_algo.py', 'my_command.py', 'tmpfile', '']
+
+
+  ['mv', './tmpfile', '../']
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\ntmpfile\n'
+
+  lesson1\nlesson2\nlesson3\ntmpfile\n
+
+  ['lesson1', 'lesson2', 'lesson3', 'tmpfile', '']
+
+
+  ['rm', '../tmpfile']
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\n'
+
+  lesson1\nlesson2\nlesson3\n
+
+  ['lesson1', 'lesson2', 'lesson3', '']
+
+
+  ['mkdir', '../tmpdir']
+  ['ls', '../']
+  b'lesson1\nlesson2\nlesson3\ntmpdir\n'
+
+  lesson1\nlesson2\nlesson3\ntmpdir\n
+
+  ['lesson1', 'lesson2', 'lesson3', 'tmpdir', '']
+
+
+  ['rm', '-r', '../tmpdir']
+  ['ls']
+  b'example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n'
+
+  example1.sh\nexample2.sh\nexample2_simple.sh\nexample2_step1.py\nexample2_step2.py\nexample2_step3.py\nlesson_text.txt\nmy_algo.py\nmy_command.py\n
+
+  ['example1.sh', 'example2.sh', 'example2_simple.sh', 'example2_step1.py', 'example2_step2.py', 'example2_step3.py', 'lesson_text.txt', 'my_algo.py', 'my_command.py', '']
+
+
+Часть 3. Как вызывать стандартные команды из Python (продолжение)
+
+https://docs.python.org/3.6/library/multiprocessing.html
+
+Мы парсили руками и играли на том, что латинские символы одинаковые в разные кодировках.
+На самом деле мы могли бы поступить гораздо проще, просто использовать декодирование:
+
+#example2_step4.py
+
+
+
+Обычно проще сначала написать скрипт внутри кода, затем записать его в файл и выполнить только один файл:
+
+# example3_1.py
+
+# нужно запустить и убедиться, что код просто и работает правильно
+
+>>> python example3_1.py
+
+Как видим, скрипт выполнился
+
+Давайте запустим командную утилиту, которую мы писали на прошлых уроках.
+
+# example3_2.py
+
+>>> python example3_2.py
+  С 2017.01.05 по 2017.01.10 было куплено 82 товаров на сумму 9812 рублей
+  С 05.01.2017 по 10.01.2017 было куплено 82 товаров на сумму 9812 рублей
+  С 30.12.2016 по 07.01.2017 было куплено 129 товаров на сумму 2730 рублей
+  С 2016.30.12 по 2017.07.01 было куплено 129 товаров на сумму 2730 рублей
+
+
+Можно немного упростить код
+
+# example3_3.py
+
+>>> python example3_3.py
+  С 2017.01.05 по 2017.01.10 было куплено 82 товаров на сумму 9812 рублей
+  С 05.01.2017 по 10.01.2017 было куплено 82 товаров на сумму 9812 рублей
+  С 30.12.2016 по 07.01.2017 было куплено 129 товаров на сумму 2730 рублей
+  С 2016.30.12 по 2017.07.01 было куплено 129 товаров на сумму 2730 рублей
+
+
+
+Часть 4. Запуск нескольких процессов.
+
+Если файлы достаточно большие, то имело бы смысл запустить наши скрипты параллельно
+
+Можно было бы открыть несколько терминалов и каждый и в каждом из них запустить свою команду, но что если у нас 30 разных config-ов
+
+Мы же просто запутаемся!
+
+К счастью в Python есть модуль multiprocessing, котрый позволяет запускать новые потоки из питоновского кода
+
+# example4_1.py
+
+Всё прекрасно работает. Но что если config-ов 400 штук? Этот скрипт создаст 400 процессов, и это очень сильно нагрузит систему. Поэтому такие действия нежелательны.
+
+Но давайте попробуем?
+
+# Следующие два примера лучше сначала запускать, а потом открывать код и объяснять.
+# Но лучше проверь что будет у тебя с сиетемой просиходить и реши для себя как лучше сделать.
+
+# example4_2.py
+
+Лично у меня всё зависло
+
+В общем, чтобы так не было, надо использовать Pool, он позволяет указать максимальное число потоков.
+
+# example4_3.py
+
+Вот так вообще норм. Работает быстро, но система не умирает.
